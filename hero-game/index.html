@@ -60,6 +60,14 @@
     font: inherit; font-size: 20px; text-align: center; width: 100%; padding: 10px; border-radius: 14px;
     border: 3px solid #d6def0; margin-bottom: 10px; color: #1d2a4a; background: #fff;
   }
+  .voice-card { max-height: 92vh; overflow: auto; animation: none; }
+  .vrow { display: flex; align-items: center; gap: 6px; padding: 8px 0; border-bottom: 2px solid var(--soft); }
+  .vrow .txt { flex: 1; text-align: right; font-size: 15px; line-height: 1.3; }
+  .vrow .txt b { display: block; font-size: 13px; opacity: .7; }
+  .vrow button { font-size: 18px; padding: 8px 11px; margin: 0; box-shadow: none; }
+  .vrow button.has { background: var(--good); }
+  .vrow button.rec { background: #e63946; animation: blink .8s infinite; }
+  @keyframes blink { 50% { opacity: .5; } }
   .score-big { font-size: 60px; font-weight: bold; color: var(--good); margin: 0; }
   .muted { opacity: .75; font-size: 15px; }
 </style>
@@ -79,7 +87,19 @@
     <button id="playBtn">PLAY ▶</button><br>
     <button class="small" id="photoBtn">📷 Photo</button>
     <button class="small" id="voiceBtn">🔊 Voice: on</button>
+    <button class="small" id="testVoiceBtn">▶ جرّب الصوت</button><br>
+    <button class="small" id="recordBtn">🎙️ سجّل صوتك له</button>
     <input type="file" id="photoInput" accept="image/*" hidden>
+    <input type="file" id="audioInput" accept="audio/*" capture hidden>
+  </div>
+</div>
+
+<div class="screen hidden" id="voiceScreen">
+  <div class="card voice-card" dir="rtl">
+    <h1>🎙️ صوتك للبطل</h1>
+    <p class="muted">دوس 🎙️ وقول الجملة، وبعدين دوس ⏹. هيسمع صوتك وهو بيلعب.</p>
+    <div id="voiceList"></div>
+    <button id="voiceDone" style="margin-top:14px">تمام ✔</button>
   </div>
 </div>
 
@@ -98,6 +118,7 @@
   // Optional embedded hero images (data URLs). Empty in the public copy: pick a photo in-game instead.
   const HERO_SPRITE = "__SPRITE__"; // full-body cut-out with transparent background
   const DEFAULT_FACE = "__FACE__";  // square face photo, used when there is no full-body sprite
+  const DEFAULT_NAME = "__NAME__";
 
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -165,7 +186,7 @@
 
   // ---------- name ----------
   const nameInput = $("nameInput");
-  nameInput.value = store.get("heroName") || "";
+  nameInput.value = store.get("heroName") || (DEFAULT_NAME.startsWith("__") ? "" : DEFAULT_NAME);
   const heroName = () => nameInput.value.trim() || "Hero";
   const isArabic = () => /[؀-ۿ]/.test(heroName());
   function updateTitle() {
@@ -186,27 +207,135 @@
       hello: n => `Hi, Super ${n}!`, start: n => `Go, Super ${n}! Fly!`,
       level: n => [`Amazing, ${n}!`, `Wow! Super ${n}!`, `You are a hero, ${n}!`, `Faster, ${n}!`],
       power: () => [`Super power!`, `Star power!`], combo: n => [`Great catch!`, `Yes, ${n}!`, `Awesome!`],
-      over: n => `Great job, Super ${n}!`, record: n => `New record! ${n} is the champion!`
+      over: n => `Great job, Super ${n}!`, record: n => `New record! ${n} is the champion!`, oops: n => `Oops! It's okay, ${n}!`
     },
     ar: {
       hello: n => `أهلاً يا سوبر ${n}`, start: n => `يلا يا سوبر ${n}! طير!`,
       level: n => [`برافو يا ${n}!`, `يا سلام يا ${n}!`, `إنت بطل يا ${n}!`, `أسرع يا ${n}!`],
       power: () => [`قوة النجمة!`, `سوبر باور!`], combo: n => [`برافو!`, `شاطر يا ${n}!`, `جامد!`],
-      over: n => `شاطر يا سوبر ${n}!`, record: n => `رقم جديد! ${n} البطل!`
+      over: n => `شاطر يا سوبر ${n}!`, record: n => `رقم جديد! ${n} البطل!`, oops: n => `ولا يهمك يا ${n}!`
     }
   };
-  function say(key) {
-    if (!voiceOn || !window.speechSynthesis) return;
-    try {
-      const lang = isArabic() ? "ar" : "en";
-      let t = LINES[lang][key](heroName());
-      if (Array.isArray(t)) t = t[Math.floor(Math.random() * t.length)];
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(t);
-      u.lang = lang === "ar" ? "ar-EG" : "en-US"; u.pitch = 1.4; u.rate = 1.05;
-      speechSynthesis.speak(u);
-    } catch (e) {}
+  // --- recorded clips (a parent's own voice) ---
+  const CLIP_KEYS = [
+    { k: "start", label: "أول ما اللعبة تبدأ" }, { k: "level", label: "لما يعدّي مستوى" },
+    { k: "power", label: "لما ياخد النجمة ⭐" }, { k: "combo", label: "لما يمسك كتير ورا بعض" },
+    { k: "oops", label: "لما سحابة تخبطه ⛈️" }, { k: "over", label: "آخر اللعبة" },
+    { k: "record", label: "لما يكسر الرقم القياسي 🏆" }
+  ];
+  const clips = {};
+  CLIP_KEYS.forEach(c => { const v = store.get("heroClip_" + c.k); if (v) clips[c.k] = v; });
+  let player = null;
+  function playClip(src) {
+    try { if (player) player.pause(); player = new Audio(src); player.volume = 1; const pr = player.play(); if (pr && pr.catch) pr.catch(() => {}); return true; }
+    catch (e) { return false; }
   }
+
+  // --- speech synthesis fallback ---
+  let voices = [];
+  const loadVoices = () => { try { voices = speechSynthesis.getVoices() || []; } catch (e) {} };
+  if (window.speechSynthesis) { loadVoices(); try { speechSynthesis.onvoiceschanged = loadVoices; } catch (e) {} }
+  function pickVoice(lang) {
+    const norm = v => (v.lang || "").replace("_", "-").toLowerCase();
+    if (lang === "ar") return voices.find(v => norm(v).startsWith("ar-eg")) || voices.find(v => norm(v).startsWith("ar"));
+    return voices.find(v => norm(v).startsWith("en-us")) || voices.find(v => norm(v).startsWith("en"));
+  }
+  function speak(text, lang) {
+    if (!window.speechSynthesis) return false;
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      const v = pickVoice(lang);
+      if (v) u.voice = v;
+      u.lang = v ? v.lang : (lang === "ar" ? "ar-EG" : "en-US");
+      u.pitch = 1.3; u.rate = 1; u.volume = 1;
+      speechSynthesis.resume();
+      if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); setTimeout(() => speechSynthesis.speak(u), 120); }
+      else speechSynthesis.speak(u);
+      return true;
+    } catch (e) { return false; }
+  }
+  function lineText(key) {
+    const lang = isArabic() ? "ar" : "en";
+    let t = LINES[lang][key](heroName());
+    if (Array.isArray(t)) t = t[Math.floor(Math.random() * t.length)];
+    return { t, lang };
+  }
+  function say(key) {
+    if (!voiceOn) return;
+    if (clips[key] && playClip(clips[key])) return;
+    const { t, lang } = lineText(key);
+    speak(t, lang);
+  }
+
+  // --- recording UI ---
+  const audioInput = $("audioInput");
+  let recKey = null, recorder = null, recChunks = [], recTimer = null;
+  function saveClip(key, dataUrl) {
+    clips[key] = dataUrl;
+    store.set("heroClip_" + key, dataUrl);
+    if (store.get("heroClip_" + key) !== dataUrl) alert("اتسجل ✔ بس الموبايل مش هيحفظه بعد ما تقفل الصفحة.");
+    renderVoiceList(); playClip(dataUrl);
+  }
+  function blobToClip(key, blob) {
+    if (blob.size > 1500000) { alert("التسجيل طويل شوية، خليه جملة قصيرة (ثانيتين أو تلاتة)."); return; }
+    const fr = new FileReader(); fr.onload = () => saveClip(key, fr.result); fr.readAsDataURL(blob);
+  }
+  function stopRec() { clearTimeout(recTimer); if (recorder && recorder.state !== "inactive") recorder.stop(); }
+  async function startRec(key) {
+    if (recorder && recorder.state === "recording") { stopRec(); return; }
+    recKey = key;
+    try {
+      if (!navigator.mediaDevices || !window.MediaRecorder) throw new Error("no recorder");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recChunks = [];
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = e => e.data && e.data.size && recChunks.push(e.data);
+      recorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const k = recKey; recorder = null; renderVoiceList();
+        if (recChunks.length) blobToClip(k, new Blob(recChunks, { type: recChunks[0].type || "audio/webm" }));
+      };
+      recorder.start(); renderVoiceList();
+      recTimer = setTimeout(stopRec, 6000);
+    } catch (e) {
+      // no in-page microphone here: use the phone's recorder / audio picker instead
+      audioInput.value = ""; audioInput.click();
+    }
+  }
+  audioInput.onchange = e => { const f = e.target.files && e.target.files[0]; if (f && recKey) blobToClip(recKey, f); };
+  function renderVoiceList() {
+    const list = $("voiceList"); list.textContent = "";
+    CLIP_KEYS.forEach(c => {
+      const row = document.createElement("div"); row.className = "vrow";
+      const txt = document.createElement("div"); txt.className = "txt";
+      const b = document.createElement("b"); b.textContent = c.label;
+      txt.appendChild(b); txt.appendChild(document.createTextNode("«" + LINES.ar[c.k](heroName()).toString().split(",")[0] + "»"));
+      const recording = recorder && recorder.state === "recording" && recKey === c.k;
+      const rec = document.createElement("button"); rec.textContent = recording ? "⏹" : "🎙️";
+      rec.className = recording ? "rec" : (clips[c.k] ? "has" : "");
+      rec.onclick = () => startRec(c.k);
+      const play = document.createElement("button"); play.textContent = "▶"; play.className = "small";
+      play.disabled = !clips[c.k]; play.style.opacity = clips[c.k] ? 1 : .35;
+      play.onclick = () => clips[c.k] && playClip(clips[c.k]);
+      const del = document.createElement("button"); del.textContent = "🗑️"; del.className = "small";
+      del.style.display = clips[c.k] ? "" : "none";
+      del.onclick = () => { delete clips[c.k]; store.del("heroClip_" + c.k); renderVoiceList(); };
+      row.append(txt, rec, play, del); list.appendChild(row);
+    });
+  }
+  $("recordBtn").onclick = () => { renderVoiceList(); $("startScreen").classList.add("hidden"); $("voiceScreen").classList.remove("hidden"); };
+  $("voiceDone").onclick = () => { stopRec(); $("voiceScreen").classList.add("hidden"); $("startScreen").classList.remove("hidden"); };
+  $("testVoiceBtn").onclick = () => {
+    if (!voiceOn) { voiceOn = true; store.set("heroVoice", "on"); showVoice(); }
+    if (clips.start) { playClip(clips.start); return; }
+    const { t, lang } = lineText("start");
+    const ok = speak(t, lang);
+    setTimeout(() => {
+      const none = !window.speechSynthesis || (!pickVoice(lang) && voices.length > 0);
+      if (!ok || none) alert("الموبايل مفيهوش صوت " + (lang === "ar" ? "عربي" : "") + " جاهز. سجّل صوتك إنت من زرار 🎙️، هيبقى أحلى كمان!");
+    }, 1500);
+  };
+
   let actx = null;
   function beep(freq, dur, type = "sine", vol = 0.15, slide = 0) {
     try {
@@ -385,7 +514,7 @@
           else if (hurtT <= 0) {
             lives--; hurtT = 1.3; shake = 0.35; combo = 0; sfx.oops(); buzz(150);
             pop(isArabic() ? "أوبس!" : "Oops!", ix, it.y, { color: "#7a5cff" });
-            if (lives <= 0) gameOver();
+            if (lives <= 0) gameOver(); else say("oops");
           }
         } else {
           score += it.kind.pts; combo++; comboT = 1.6; hero.squash = 1;
