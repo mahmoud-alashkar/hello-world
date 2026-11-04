@@ -9,61 +9,59 @@
 <title>Super Hero Catch</title>
 <style>
   :root {
-    --sky-top: #5ec8ff;
-    --sky-bottom: #c9f0ff;
-    --ink: #1d2a4a;
     --card: #ffffff;
+    --ink: #1d2a4a;
     --accent: #ff7a1a;
     --accent-dark: #d95f00;
     --good: #2bb673;
+    --soft: #e8eefc;
+    --soft-edge: #c5d0ea;
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --card: #1f2a44; --ink: #f2f5ff; }
+    :root:not([data-theme="light"]) { --card: #1f2a44; --ink: #f2f5ff; --soft: #2d3b5e; --soft-edge: #18213a; }
   }
-  :root[data-theme="dark"] { --card: #1f2a44; --ink: #f2f5ff; }
+  :root[data-theme="dark"] { --card: #1f2a44; --ink: #f2f5ff; --soft: #2d3b5e; --soft-edge: #18213a; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--sky-top); }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #5ec8ff; }
   body {
     font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
-    color: var(--ink);
-    touch-action: none;
-    user-select: none; -webkit-user-select: none;
+    color: var(--ink); touch-action: none; user-select: none; -webkit-user-select: none;
   }
   canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
   .screen {
     position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-    padding: 16px; background: rgba(29, 42, 74, .35);
+    padding: 16px; background: rgba(29, 42, 74, .3);
   }
   .screen.hidden { display: none; }
   .card {
-    background: var(--card); border-radius: 28px; padding: 24px 20px; width: min(420px, 100%);
-    text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,.12);
+    position: relative; background: var(--card); border-radius: 28px; padding: 20px 20px 22px;
+    width: min(420px, 100%); text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,.12);
+    animation: pop .5s cubic-bezier(.3,1.6,.5,1);
   }
-  .hero-pic {
-    width: 132px; height: 132px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 10px;
-    border: 6px solid var(--accent); background: #ffe1b8;
-  }
-  h1 { margin: 4px 0 6px; font-size: 32px; line-height: 1.1; color: var(--accent-dark); }
-  p { margin: 6px 0 14px; font-size: 17px; }
-  .legend { display: flex; justify-content: center; gap: 14px; font-size: 26px; margin: 8px 0 14px; flex-wrap: wrap; }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .hero-stage { height: 190px; display: flex; align-items: flex-end; justify-content: center; margin-top: -90px; }
+  .hero-pic { display: block; animation: bob 1.6s ease-in-out infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.25)); }
+  .hero-pic.full { height: 210px; width: auto; }
+  .hero-pic.round { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 6px solid var(--accent); background: #ffe1b8; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
+  h1 { margin: 10px 0 6px; font-size: 34px; line-height: 1.1; color: var(--accent-dark); }
+  p { margin: 6px 0 12px; font-size: 17px; }
+  .legend { display: flex; justify-content: center; gap: 12px; margin: 6px 0 14px; flex-wrap: wrap; }
   .legend span { display: flex; flex-direction: column; align-items: center; font-size: 13px; font-weight: bold; }
   .legend b { font-size: 30px; }
   button {
     font: inherit; font-size: 26px; font-weight: bold; border: 0; border-radius: 999px;
-    background: var(--accent); color: #fff; padding: 14px 40px; box-shadow: 0 6px 0 var(--accent-dark);
-    cursor: pointer;
+    background: var(--accent); color: #fff; padding: 14px 44px; box-shadow: 0 6px 0 var(--accent-dark); cursor: pointer;
   }
   button:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--accent-dark); }
-  .small {
-    font-size: 15px; padding: 8px 16px; background: #e8eefc; color: var(--ink); box-shadow: 0 3px 0 #c5d0ea; margin-top: 14px;
-  }
-  .small:active { box-shadow: 0 1px 0 #c5d0ea; }
+  .small { font-size: 15px; padding: 8px 14px; background: var(--soft); color: var(--ink); box-shadow: 0 3px 0 var(--soft-edge); margin: 12px 3px 0; }
+  .small:active { box-shadow: 0 1px 0 var(--soft-edge); }
   input[type=text] {
     font: inherit; font-size: 20px; text-align: center; width: 100%; padding: 10px; border-radius: 14px;
-    border: 3px solid #d6def0; margin-bottom: 14px; color: #1d2a4a; background: #fff;
+    border: 3px solid #d6def0; margin-bottom: 10px; color: #1d2a4a; background: #fff;
   }
-  .score-big { font-size: 56px; font-weight: bold; color: var(--good); margin: 0; }
-  .muted { opacity: .7; font-size: 15px; }
+  .score-big { font-size: 60px; font-weight: bold; color: var(--good); margin: 0; }
+  .muted { opacity: .75; font-size: 15px; }
 </style>
 </head>
 <body>
@@ -71,22 +69,23 @@
 
 <div class="screen" id="startScreen">
   <div class="card">
-    <img class="hero-pic" id="startPic" alt="">
+    <div class="hero-stage"><img class="hero-pic" id="startPic" alt=""></div>
     <h1 id="titleText">Super Hero!</h1>
-    <input type="text" id="nameInput" maxlength="14" placeholder="Hero's name">
-    <p>Slide your finger to fly.<br>Catch the yummy things!</p>
+    <input type="text" id="nameInput" maxlength="14" placeholder="Hero's name / اسم البطل" dir="auto">
+    <p>Slide your finger to fly!<br>حرّك صباعك عشان تطير</p>
     <div class="legend">
-      <span><b>🍌</b>1</span><span><b>⚽</b>2</span><span><b>🐦</b>3</span><span><b>⭐</b>5</span><span><b>⛈️</b>Oops!</span>
+      <span><b>🍌</b>1</span><span><b>⚽</b>2</span><span><b>🐦</b>3</span><span><b>⭐</b>POWER</span><span><b>⛈️</b>Oops!</span>
     </div>
     <button id="playBtn">PLAY ▶</button><br>
-    <button class="small" id="photoBtn">📷 Change hero photo</button>
+    <button class="small" id="photoBtn">📷 Photo</button>
+    <button class="small" id="voiceBtn">🔊 Voice: on</button>
     <input type="file" id="photoInput" accept="image/*" hidden>
   </div>
 </div>
 
 <div class="screen hidden" id="overScreen">
   <div class="card">
-    <img class="hero-pic" id="overPic" alt="">
+    <div class="hero-stage"><img class="hero-pic" id="overPic" alt=""></div>
     <h1 id="overTitle">Great job!</h1>
     <p class="score-big" id="finalScore">0</p>
     <p class="muted" id="bestText"></p>
@@ -96,37 +95,33 @@
 
 <script>
 (() => {
-  // Embedded hero photo (data URL). Left empty in the public version; pick a photo in-game instead.
-  const DEFAULT_FACE = "__FACE__";
+  // Optional embedded hero images (data URLs). Empty in the public copy: pick a photo in-game instead.
+  const HERO_SPRITE = "__SPRITE__"; // full-body cut-out with transparent background
+  const DEFAULT_FACE = "__FACE__";  // square face photo, used when there is no full-body sprite
 
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
   };
-
-  const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
   const $ = id => document.getElementById(id);
+  const canvas = $("game"), ctx = canvas.getContext("2d");
+  const rand = (a, b) => a + Math.random() * (b - a);
 
-  let W = 0, H = 0, DPR = 1;
+  let W = 0, H = 0;
   function resize() {
-    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth; H = window.innerHeight;
-    canvas.width = W * DPR; canvas.height = H * DPR;
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   window.addEventListener("resize", resize);
   resize();
 
-  // ---------- hero face ----------
-  const face = new Image();
-  let faceReady = false;
-  face.onload = () => { faceReady = true; };
-  function setFace(src) {
-    faceReady = false;
-    if (src) { face.src = src; $("startPic").src = src; $("overPic").src = src; }
-    else { $("startPic").src = cartoonFaceURL(); $("overPic").src = $("startPic").src; }
-  }
+  // ---------- hero look ----------
+  // mode "sprite": full-body cut-out photo. mode "face": round face photo on a drawn body.
+  const sprite = new Image(), face = new Image(), cartoon = new Image();
+  let mode = "face";
   function cartoonFaceURL() {
     const c = document.createElement("canvas"); c.width = c.height = 128;
     const g = c.getContext("2d");
@@ -137,24 +132,33 @@
     g.beginPath(); g.arc(64, 78, 22, 0.2, Math.PI - 0.2); g.stroke();
     return c.toDataURL();
   }
-  const savedFace = store.get("heroFace");
-  setFace(savedFace || DEFAULT_FACE.startsWith("data:") && DEFAULT_FACE || "");
-  const cartoon = new Image(); cartoon.src = cartoonFaceURL();
+  cartoon.src = cartoonFaceURL();
+  function showPics(src, full) {
+    ["startPic", "overPic"].forEach(id => { $(id).src = src; $(id).className = "hero-pic " + (full ? "full" : "round"); });
+  }
+  function applyLook() {
+    const picked = store.get("heroFace");
+    if (picked) { mode = "face"; face.src = picked; showPics(picked, false); }
+    else if (HERO_SPRITE.startsWith("data:")) { mode = "sprite"; sprite.src = HERO_SPRITE; showPics(HERO_SPRITE, true); }
+    else if (DEFAULT_FACE.startsWith("data:")) { mode = "face"; face.src = DEFAULT_FACE; showPics(DEFAULT_FACE, false); }
+    else { mode = "face"; face.src = cartoon.src; showPics(cartoon.src, false); }
+  }
+  applyLook();
 
-  $("photoBtn").onclick = () => $("photoInput").click();
+  $("photoBtn").onclick = () => {
+    if (store.get("heroFace") && HERO_SPRITE.startsWith("data:") && confirm("Go back to the built-in hero?")) { store.del("heroFace"); applyLook(); return; }
+    $("photoInput").click();
+  };
   $("photoInput").onchange = e => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const img = new Image();
     img.onload = () => {
-      // center-square crop, 256px
       const s = Math.min(img.width, img.height);
       const c = document.createElement("canvas"); c.width = c.height = 256;
       c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2 * 0.6, s, s, 0, 0, 256, 256);
-      const url = c.toDataURL("image/jpeg", 0.85);
-      store.set("heroFace", url);
-      setFace(url);
-      URL.revokeObjectURL(img.src);
+      store.set("heroFace", c.toDataURL("image/jpeg", 0.85));
+      applyLook(); URL.revokeObjectURL(img.src);
     };
     img.src = URL.createObjectURL(file);
   };
@@ -162,12 +166,47 @@
   // ---------- name ----------
   const nameInput = $("nameInput");
   nameInput.value = store.get("heroName") || "";
-  function heroName() { return nameInput.value.trim() || "Hero"; }
-  function updateTitle() { $("titleText").textContent = "Super " + heroName() + "!"; document.title = "Super " + heroName(); }
+  const heroName = () => nameInput.value.trim() || "Hero";
+  const isArabic = () => /[؀-ۿ]/.test(heroName());
+  function updateTitle() {
+    $("titleText").textContent = isArabic() ? "سوبر " + heroName() + "!" : "Super " + heroName() + "!";
+    document.title = "Super " + heroName();
+  }
   nameInput.addEventListener("input", () => { store.set("heroName", nameInput.value.trim()); updateTitle(); });
   updateTitle();
 
-  // ---------- sound ----------
+  // ---------- voice & sound ----------
+  let voiceOn = store.get("heroVoice") !== "off";
+  const voiceBtn = $("voiceBtn");
+  const showVoice = () => voiceBtn.textContent = voiceOn ? "🔊 Voice: on" : "🔇 Voice: off";
+  showVoice();
+  voiceBtn.onclick = () => { voiceOn = !voiceOn; store.set("heroVoice", voiceOn ? "on" : "off"); showVoice(); if (voiceOn) say("hello"); };
+  const LINES = {
+    en: {
+      hello: n => `Hi, Super ${n}!`, start: n => `Go, Super ${n}! Fly!`,
+      level: n => [`Amazing, ${n}!`, `Wow! Super ${n}!`, `You are a hero, ${n}!`, `Faster, ${n}!`],
+      power: () => [`Super power!`, `Star power!`], combo: n => [`Great catch!`, `Yes, ${n}!`, `Awesome!`],
+      over: n => `Great job, Super ${n}!`, record: n => `New record! ${n} is the champion!`
+    },
+    ar: {
+      hello: n => `أهلاً يا سوبر ${n}`, start: n => `يلا يا سوبر ${n}! طير!`,
+      level: n => [`برافو يا ${n}!`, `يا سلام يا ${n}!`, `إنت بطل يا ${n}!`, `أسرع يا ${n}!`],
+      power: () => [`قوة النجمة!`, `سوبر باور!`], combo: n => [`برافو!`, `شاطر يا ${n}!`, `جامد!`],
+      over: n => `شاطر يا سوبر ${n}!`, record: n => `رقم جديد! ${n} البطل!`
+    }
+  };
+  function say(key) {
+    if (!voiceOn || !window.speechSynthesis) return;
+    try {
+      const lang = isArabic() ? "ar" : "en";
+      let t = LINES[lang][key](heroName());
+      if (Array.isArray(t)) t = t[Math.floor(Math.random() * t.length)];
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(t);
+      u.lang = lang === "ar" ? "ar-EG" : "en-US"; u.pitch = 1.4; u.rate = 1.05;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
   let actx = null;
   function beep(freq, dur, type = "sine", vol = 0.15, slide = 0) {
     try {
@@ -179,54 +218,76 @@
       o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + dur);
     } catch (e) {}
   }
+  const tune = (notes, step, type = "square", vol = 0.07) => notes.forEach((f, i) => setTimeout(() => beep(f, step * 1.3 / 1000, type, vol), i * step));
   const sfx = {
-    catch: () => beep(660, 0.12, "triangle", 0.2, 1.5),
-    star: () => { beep(880, 0.1, "triangle", 0.2); setTimeout(() => beep(1320, 0.18, "triangle", 0.2), 90); },
+    catch: n => beep(520 + Math.min(n, 12) * 40, 0.12, "triangle", 0.2, 1.5),
+    power: () => tune([523, 659, 784, 1047, 1319, 1568], 70, "triangle", 0.12),
     oops: () => beep(220, 0.35, "sawtooth", 0.08, 0.5),
-    level: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.15, "square", 0.08), i * 110))
+    shield: () => beep(1200, 0.15, "sine", 0.12, 0.6),
+    level: () => tune([523, 659, 784, 1047], 110),
+    over: () => tune([784, 659, 784, 1047, 1319], 140, "triangle", 0.1)
   };
-  function buzz(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+  const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 
-  // ---------- game state ----------
+  // ---------- world ----------
   const ITEMS = [
-    { emoji: "🍌", pts: 1, w: 50 },
-    { emoji: "⚽", pts: 2, w: 25 },
-    { emoji: "🐦", pts: 3, w: 15 },
-    { emoji: "⭐", pts: 5, w: 7 },
+    { emoji: "🍌", pts: 1, w: 50 }, { emoji: "⚽", pts: 2, w: 26 },
+    { emoji: "🐦", pts: 3, w: 16 }, { emoji: "⭐", pts: 5, w: 6, power: true },
   ];
   const CLOUD = { emoji: "⛈️", bad: true };
+  // sky moods per level: day, sunny, sunset, dusk, night (then loops)
+  const SKIES = [
+    ["#5ec8ff", "#c9f0ff"], ["#3fb2ff", "#fff3b0"], ["#ff8a5c", "#ffd59e"], ["#7a5cff", "#ff9ecf"], ["#0f1a4a", "#3b4ea8"]
+  ];
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(",")})`; };
 
   let state = "menu";
-  let hero, items, pops, sparkles, score, lives, level, spawnT, time, hurtT, lastT, clouds;
+  let hero, items, pops, parts, score, lives, level, spawnT, time, hurtT, powerT, combo, comboT, lastT, clouds, stars, skyT, shake, introT;
+
+  function heroSize() {
+    if (mode === "sprite") {
+      const asp = sprite.naturalWidth ? sprite.naturalWidth / sprite.naturalHeight : 0.51;
+      const h = Math.min(H * 0.26, (W * 0.34) / asp);
+      return { h, w: h * asp, r: h * asp * 0.55 };
+    }
+    const r = Math.min(W, H) * 0.085 + 14;
+    return { h: r * 3, w: r * 2, r };
+  }
 
   function reset() {
-    hero = { x: W / 2, y: H * 0.74, tx: W / 2, r: Math.min(W, H) * 0.085 + 14, tilt: 0 };
-    items = []; pops = []; sparkles = [];
-    score = 0; lives = 3; level = 1; spawnT = 0; time = 0; hurtT = 0;
-    clouds = Array.from({ length: 5 }, (_, i) => ({ x: Math.random() * W, y: 40 + i * (H * 0.14), s: 0.6 + Math.random() * 0.8 }));
+    hero = { x: W / 2, y: H * 0.72, tx: W / 2, tilt: 0, squash: 0 };
+    items = []; pops = []; parts = [];
+    score = 0; lives = 3; level = 1; spawnT = 1; time = 0; hurtT = 0; powerT = 0; combo = 0; comboT = 0; skyT = 0; shake = 0; introT = 0;
+    clouds = Array.from({ length: 6 }, (_, i) => ({ x: Math.random() * W, y: 30 + i * (H * 0.13), s: rand(0.5, 1.3) }));
+    stars = Array.from({ length: 60 }, () => ({ x: Math.random() * W, y: Math.random() * H * 0.8, p: Math.random() * 6 }));
   }
   reset();
 
   function pickItem() {
-    const badChance = Math.min(0.12 + level * 0.025, 0.3);
-    if (time > 3 && Math.random() < badChance) return CLOUD;
+    if (time > 4 && Math.random() < Math.min(0.12 + level * 0.025, 0.3)) return CLOUD;
     let r = Math.random() * ITEMS.reduce((a, b) => a + b.w, 0);
-    for (const it of ITEMS) { if ((r -= it.w) < 0) return it; }
+    for (const it of ITEMS) if ((r -= it.w) < 0) return it;
     return ITEMS[0];
   }
-
   function spawn() {
-    const kind = pickItem();
-    const size = Math.min(W, H) * 0.09 + 18;
+    const kind = pickItem(), size = Math.min(W, H) * 0.09 + 18;
     items.push({
-      kind, size,
-      x: size / 2 + Math.random() * (W - size),
-      y: -size,
-      vy: (H * 0.22) * (1 + (level - 1) * 0.13) * (0.8 + Math.random() * 0.4),
-      wob: Math.random() * 6.28,
-      spin: (Math.random() - 0.5) * 2
+      kind, size, x: rand(size / 2, W - size / 2), y: -size,
+      vy: H * 0.22 * (1 + (level - 1) * 0.12) * rand(0.8, 1.2), wob: Math.random() * 6.28, spin: rand(-1, 1)
     });
   }
+  function burst(x, y, n, colors, speed = 320) {
+    for (let k = 0; k < n; k++) {
+      const a = Math.random() * 6.28, v = rand(0.3, 1) * speed;
+      parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 120, t: 0, life: rand(0.5, 1), c: colors[k % colors.length], s: rand(3, 7), g: 600 });
+    }
+  }
+  function confetti() {
+    const cols = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ff7a1a"];
+    for (let k = 0; k < 90; k++) parts.push({ x: rand(0, W), y: rand(-60, -10), vx: rand(-60, 60), vy: rand(80, 260), t: 0, life: 2.4, c: cols[k % 6], s: rand(5, 9), g: 120, rect: true, rot: rand(0, 6) });
+  }
+  function pop(text, x, y, opt = {}) { pops.push({ text, x, y, t: 0, ...opt }); }
 
   // ---------- input ----------
   function pointer(e) {
@@ -245,127 +306,188 @@
   // ---------- screens ----------
   function start() {
     resize(); reset();
-    $("startScreen").classList.add("hidden");
-    $("overScreen").classList.add("hidden");
-    state = "play"; beep(523, 0.1, "triangle", 0.15);
+    $("startScreen").classList.add("hidden"); $("overScreen").classList.add("hidden");
+    state = "play"; hero.y = H + 200; introT = 1.2;
+    sfx.power(); say("start");
+    pop(isArabic() ? "سوبر " + heroName() + "!" : "Super " + heroName() + "!", W / 2, H * 0.38, { big: true, life: 2 });
   }
   $("playBtn").onclick = start;
   $("againBtn").onclick = start;
 
   function gameOver() {
     state = "over";
-    const best = Math.max(score, +(store.get("heroBest") || 0));
+    const prev = +(store.get("heroBest") || 0), best = Math.max(score, prev);
     store.set("heroBest", best);
+    const record = score > prev && score > 0;
     $("finalScore").textContent = score;
-    $("overTitle").textContent = score >= best && score > 0 ? "New record, " + heroName() + "! 🏆" : "Great job, " + heroName() + "!";
-    $("bestText").textContent = "Best: " + best;
-    setTimeout(() => $("overScreen").classList.remove("hidden"), 600);
+    $("overTitle").textContent = record ? "🏆 " + (isArabic() ? "رقم جديد يا " : "New record, ") + heroName() + "!" : (isArabic() ? "شاطر يا " : "Great job, ") + heroName() + "!";
+    $("bestText").textContent = (isArabic() ? "أحسن نتيجة: " : "Best: ") + best;
+    sfx.over(); say(record ? "record" : "over"); if (record) confetti();
+    setTimeout(() => $("overScreen").classList.remove("hidden"), 900);
   }
 
   // ---------- update ----------
   function update(dt) {
     time += dt;
-    clouds.forEach(c => { c.x += dt * 12 * c.s; if (c.x > W + 120) c.x = -120; });
+    clouds.forEach(c => { c.x += dt * 14 * c.s; if (c.x > W + 140) c.x = -140; });
+    parts.forEach(p => { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.g * dt; if (p.rot !== undefined) p.rot += dt * 6; });
+    parts = parts.filter(p => p.t < p.life);
+    pops.forEach(p => p.t += dt); pops = pops.filter(p => p.t < (p.life || 0.9));
+    const targetSky = (level - 1) % SKIES.length;
+    if (Math.abs(targetSky - skyT) > 1.5) skyT = targetSky;
+    skyT += (targetSky - skyT) * Math.min(1, dt * 1.5);
+    if (shake > 0) shake -= dt;
     if (state !== "play") return;
+
+    const S = heroSize();
+    const baseY = H * 0.72;
+    if (introT > 0) { introT -= dt; hero.y += (baseY - hero.y) * Math.min(1, dt * 5); }
+    else hero.y = baseY + Math.sin(time * 4) * 7;
 
     if (keys.ArrowLeft) hero.tx -= 600 * dt;
     if (keys.ArrowRight) hero.tx += 600 * dt;
-    hero.tx = Math.max(hero.r, Math.min(W - hero.r, hero.tx));
+    hero.tx = Math.max(S.w / 2, Math.min(W - S.w / 2, hero.tx));
     const prevX = hero.x;
     hero.x += (hero.tx - hero.x) * Math.min(1, dt * 12);
-    hero.tilt += (((hero.x - prevX) / Math.max(dt, 0.001)) * 0.0006 - hero.tilt) * Math.min(1, dt * 8);
+    const vx = (hero.x - prevX) / Math.max(dt, 0.001);
+    hero.tilt += (vx * 0.0006 - hero.tilt) * Math.min(1, dt * 8);
     hero.tilt = Math.max(-0.35, Math.min(0.35, hero.tilt));
-    hero.y = H * 0.74 + Math.sin(time * 4) * 6;
+    hero.squash *= Math.pow(0.02, dt);
     if (hurtT > 0) hurtT -= dt;
+    if (powerT > 0) powerT -= dt;
+    if (comboT > 0) comboT -= dt; else combo = 0;
+
+    // flying trail
+    const trailCols = powerT > 0 ? ["#ffd93d", "#ff595e", "#8ac926", "#1982c4", "#ff7a1a"] : ["#ffffff", "#fff3b0"];
+    if (Math.random() < (powerT > 0 ? 1 : 0.5)) parts.push({ x: hero.x + rand(-S.w * 0.2, S.w * 0.2), y: hero.y + S.h * 0.45, vx: rand(-30, 30), vy: rand(60, 160), t: 0, life: 0.6, c: trailCols[Math.floor(Math.random() * trailCols.length)], s: rand(3, 6), g: 0 });
 
     const newLevel = 1 + Math.floor(score / 25);
-    if (newLevel > level) { level = newLevel; sfx.level(); pops.push({ x: W / 2, y: H * 0.35, text: "Level " + level + "!", t: 0, big: true }); }
+    if (newLevel > level) {
+      level = newLevel; sfx.level(); confetti(); say("level");
+      pop((isArabic() ? "مستوى " : "Level ") + level + "!", W / 2, H * 0.35, { big: true, life: 1.8 });
+    }
 
     spawnT -= dt;
-    if (spawnT <= 0) { spawn(); spawnT = Math.max(0.35, 1.1 - level * 0.08) * (0.7 + Math.random() * 0.6); }
+    if (spawnT <= 0) { spawn(); spawnT = Math.max(0.35, 1.1 - level * 0.08) * rand(0.7, 1.3); }
 
+    const hx = hero.x, hy = hero.y - S.h * 0.08;
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
       it.y += it.vy * dt; it.wob += dt * 3;
+      if (powerT > 0 && !it.kind.bad) { // star power: magnet
+        it.x += (hx - it.x) * Math.min(1, dt * 2.5); it.y += (hy - it.y) * Math.min(1, dt * 1.2);
+      }
       const ix = it.x + Math.sin(it.wob) * 10;
-      const dx = ix - hero.x, dy = it.y - hero.y;
-      if (Math.hypot(dx, dy) < hero.r + it.size * 0.38) {
+      if (Math.hypot(ix - hx, (it.y - hy) * 0.8) < S.r + it.size * 0.38) {
         items.splice(i, 1);
         if (it.kind.bad) {
-          if (hurtT <= 0) { lives--; hurtT = 1.2; sfx.oops(); buzz(150); pops.push({ x: ix, y: it.y, text: "Oops!", t: 0, bad: true }); }
-          if (lives <= 0) gameOver();
+          if (powerT > 0) { sfx.shield(); burst(ix, it.y, 16, ["#ffffff", "#b8c6ff"]); pop("POW!", ix, it.y, { color: "#ff7a1a" }); }
+          else if (hurtT <= 0) {
+            lives--; hurtT = 1.3; shake = 0.35; combo = 0; sfx.oops(); buzz(150);
+            pop(isArabic() ? "أوبس!" : "Oops!", ix, it.y, { color: "#7a5cff" });
+            if (lives <= 0) gameOver();
+          }
         } else {
-          score += it.kind.pts;
-          it.kind.pts >= 5 ? sfx.star() : sfx.catch();
-          pops.push({ x: ix, y: it.y, text: "+" + it.kind.pts, t: 0 });
-          for (let k = 0; k < 10; k++) sparkles.push({ x: ix, y: it.y, vx: (Math.random() - .5) * 300, vy: (Math.random() - .8) * 300, t: 0, c: `hsl(${Math.random() * 360},90%,60%)` });
+          score += it.kind.pts; combo++; comboT = 1.6; hero.squash = 1;
+          sfx.catch(combo);
+          pop("+" + it.kind.pts, ix, it.y);
+          burst(ix, it.y, 12, ["#ffca3a", "#ff595e", "#8ac926", "#1982c4", "#ffffff"]);
+          if (it.kind.power) {
+            powerT = 5; sfx.power(); say("power");
+            pop(isArabic() ? "قوة النجمة! ⭐" : "STAR POWER! ⭐", W / 2, H * 0.3, { big: true, life: 1.6, color: "#ffb703" });
+          } else if (combo % 6 === 0) {
+            const words = isArabic() ? ["برافو!", "جامد!", "يا بطل!"] : ["AWESOME!", "SUPER!", "WOW!"];
+            pop(words[Math.floor(Math.random() * 3)] + " x" + combo, W / 2, H * 0.42, { big: true, life: 1.3, color: "#ff595e" });
+            say("combo");
+          }
         }
         continue;
       }
       if (it.y > H + it.size) items.splice(i, 1);
     }
-    pops.forEach(p => p.t += dt); pops = pops.filter(p => p.t < (p.big ? 1.6 : 0.9));
-    sparkles.forEach(s => { s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 600 * dt; });
-    sparkles = sparkles.filter(s => s.t < 0.7);
   }
 
   // ---------- draw ----------
   function drawBackground() {
+    const i0 = Math.floor(skyT), f = skyT - i0, a = SKIES[i0 % 5], b = SKIES[(i0 + 1) % 5];
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#5ec8ff"); g.addColorStop(1, "#c9f0ff");
+    g.addColorStop(0, mix(a[0], b[0], f)); g.addColorStop(1, mix(a[1], b[1], f));
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = "rgba(255,255,255,.85)";
+    const night = Math.max(0, 1 - Math.abs(skyT - 4));
+    if (night > 0.05) {
+      ctx.fillStyle = "#fff";
+      stars.forEach(s => { ctx.globalAlpha = night * (0.5 + 0.5 * Math.sin(time * 3 + s.p)); ctx.fillRect(s.x, s.y, 2.5, 2.5); });
+      ctx.globalAlpha = night; ctx.fillStyle = "#fff6c9";
+      ctx.beginPath(); ctx.arc(W * 0.82, H * 0.12, 30, 0, 7); ctx.fill();
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = "rgba(255,230,120,.9)";
+      ctx.beginPath(); ctx.arc(W * 0.85, H * 0.1, 34 + Math.sin(time * 2) * 3, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = `rgba(255,255,255,${0.85 - night * 0.55})`;
     clouds.forEach(c => {
       const s = 40 * c.s;
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, s, 0, 7); ctx.arc(c.x + s, c.y - s * .4, s * 1.1, 0, 7); ctx.arc(c.x + s * 2, c.y, s * .9, 0, 7);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(c.x, c.y, s, 0, 7); ctx.arc(c.x + s, c.y - s * .4, s * 1.1, 0, 7); ctx.arc(c.x + s * 2, c.y, s * .9, 0, 7); ctx.fill();
     });
-    // hills
-    ctx.fillStyle = "#7ed957";
+    ctx.fillStyle = night > 0.5 ? "#2f6b3a" : "#7ed957";
     ctx.beginPath(); ctx.moveTo(0, H);
     for (let x = 0; x <= W + 20; x += 20) ctx.lineTo(x, H * 0.92 + Math.sin(x * 0.012) * 14);
     ctx.lineTo(W + 20, H); ctx.fill();
-    ctx.fillStyle = "#5bbf3a";
+    ctx.fillStyle = night > 0.5 ? "#24552d" : "#5bbf3a";
     ctx.beginPath(); ctx.moveTo(0, H);
     for (let x = 0; x <= W + 20; x += 20) ctx.lineTo(x, H * 0.96 + Math.sin(x * 0.02 + 2) * 10);
     ctx.lineTo(W + 20, H); ctx.fill();
   }
 
-  function drawHero() {
-    const { x, y, r } = hero;
-    if (hurtT > 0 && Math.floor(hurtT * 10) % 2 === 0) return; // blink when hurt
-    ctx.save();
-    ctx.translate(x, y); ctx.rotate(hero.tilt);
-    // cape
-    const flap = Math.sin(time * 10) * r * 0.15;
+  function drawCape(top, bottom, half, flap) {
     ctx.fillStyle = "#e63946";
     ctx.beginPath();
-    ctx.moveTo(-r * 0.55, r * 0.75);
-    ctx.quadraticCurveTo(-r * 1.3 - hero.tilt * r * 2, r * 1.8 + flap, -r * 0.9, r * 2.4 + flap);
-    ctx.lineTo(r * 0.9, r * 2.4 - flap);
-    ctx.quadraticCurveTo(r * 1.3 - hero.tilt * r * 2, r * 1.8 - flap, r * 0.55, r * 0.75);
+    ctx.moveTo(-half * 0.55, top);
+    ctx.quadraticCurveTo(-half * 1.9 - hero.tilt * half * 3, (top + bottom) / 2 + flap, -half * 1.5, bottom + flap);
+    ctx.quadraticCurveTo(0, bottom + half * 0.3, half * 1.5, bottom - flap);
+    ctx.quadraticCurveTo(half * 1.9 - hero.tilt * half * 3, (top + bottom) / 2 - flap, half * 0.55, top);
     ctx.fill();
-    // body (orange shirt like his school uniform)
-    ctx.fillStyle = "#ff7a1a";
-    ctx.beginPath(); ctx.ellipse(0, r * 1.45, r * 0.62, r * 0.75, 0, 0, 7); ctx.fill();
-    // star emblem
-    ctx.fillStyle = "#ffd93d"; ctx.font = `${r * 0.6}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText("★", 0, r * 1.4);
-    // arms up
-    ctx.strokeStyle = "#ffd3a6"; ctx.lineWidth = r * 0.22; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(-r * 0.5, r * 1.1); ctx.lineTo(-r * 1.05, r * 0.6 + flap * 0.5); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(r * 0.5, r * 1.1); ctx.lineTo(r * 1.05, r * 0.6 - flap * 0.5); ctx.stroke();
-    // head (photo)
-    ctx.fillStyle = "#fff";
-    ctx.beginPath(); ctx.arc(0, 0, r + 4, 0, 7); ctx.fill();
+    ctx.fillStyle = "#b5202d";
+    ctx.beginPath(); ctx.ellipse(0, top, half * 0.6, half * 0.16, 0, 0, 7); ctx.fill();
+  }
+
+  function drawHero() {
+    if (hurtT > 0 && Math.floor(hurtT * 10) % 2 === 0) return;
+    const S = heroSize();
+    const sq = hero.squash * 0.12;
     ctx.save();
-    ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.clip();
-    const img = faceReady ? face : cartoon;
-    if (img.complete && img.naturalWidth) ctx.drawImage(img, -r, -r, r * 2, r * 2);
-    ctx.restore();
-    ctx.lineWidth = 4; ctx.strokeStyle = "#ff7a1a";
-    ctx.beginPath(); ctx.arc(0, 0, r + 3, 0, 7); ctx.stroke();
+    ctx.translate(hero.x, hero.y); ctx.rotate(hero.tilt); ctx.scale(1 + sq, 1 - sq);
+    const flap = Math.sin(time * 11) * S.w * 0.12;
+    if (powerT > 0) { // golden aura
+      const pulse = 1 + Math.sin(time * 12) * 0.06;
+      const g = ctx.createRadialGradient(0, 0, S.w * 0.2, 0, 0, S.h * 0.75 * pulse);
+      g.addColorStop(0, "rgba(255,230,80,.55)"); g.addColorStop(1, "rgba(255,230,80,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, S.h * 0.75 * pulse, 0, 7); ctx.fill();
+    }
+    if (mode === "sprite" && sprite.complete && sprite.naturalWidth) {
+      drawCape(-S.h * 0.22, S.h * 0.55, S.w * 0.42, flap);
+      if (powerT > 0) { ctx.shadowColor = "#ffd93d"; ctx.shadowBlur = 30; }
+      ctx.drawImage(sprite, -S.w / 2, -S.h / 2, S.w, S.h);
+      ctx.shadowBlur = 0;
+    } else {
+      const r = S.r;
+      ctx.translate(0, -r * 0.6);
+      drawCape(r * 0.75, r * 2.4, r * 0.6, flap);
+      ctx.fillStyle = "#ff7a1a";
+      ctx.beginPath(); ctx.ellipse(0, r * 1.45, r * 0.62, r * 0.75, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = "#ffd93d"; ctx.font = `${r * 0.6}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("★", 0, r * 1.4);
+      ctx.strokeStyle = "#ffd3a6"; ctx.lineWidth = r * 0.22; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(-r * 0.5, r * 1.1); ctx.lineTo(-r * 1.05, r * 0.6 + flap * 0.5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r * 0.5, r * 1.1); ctx.lineTo(r * 1.05, r * 0.6 - flap * 0.5); ctx.stroke();
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(0, 0, r + 4, 0, 7); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.clip();
+      const img = face.complete && face.naturalWidth ? face : cartoon;
+      ctx.drawImage(img, -r, -r, r * 2, r * 2);
+      ctx.restore();
+      ctx.lineWidth = 4; ctx.strokeStyle = powerT > 0 ? "#ffd93d" : "#ff7a1a";
+      ctx.beginPath(); ctx.arc(0, 0, r + 3, 0, 7); ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -374,27 +496,32 @@
     items.forEach(it => {
       ctx.save();
       ctx.translate(it.x + Math.sin(it.wob) * 10, it.y);
-      ctx.rotate(it.kind.bad ? 0 : Math.sin(it.wob) * 0.3 * it.spin);
-      ctx.font = `${it.size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+      if (it.kind.power) { ctx.rotate(time * 3); ctx.shadowColor = "#ffd93d"; ctx.shadowBlur = 25; }
+      else if (!it.kind.bad) ctx.rotate(Math.sin(it.wob) * 0.3 * it.spin);
+      ctx.font = `${it.size * (it.kind.power ? 1.15 : 1)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
       ctx.fillText(it.kind.emoji, 0, 0);
       ctx.restore();
     });
   }
 
   function drawFx() {
-    sparkles.forEach(s => {
-      ctx.globalAlpha = 1 - s.t / 0.7; ctx.fillStyle = s.c;
-      ctx.beginPath(); ctx.arc(s.x, s.y, 5, 0, 7); ctx.fill();
+    parts.forEach(p => {
+      ctx.globalAlpha = Math.max(0, 1 - p.t / p.life); ctx.fillStyle = p.c;
+      if (p.rect) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillRect(-p.s / 2, -p.s, p.s, p.s * 2); ctx.restore(); }
+      else { ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill(); }
     });
     ctx.globalAlpha = 1;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
     pops.forEach(p => {
-      const life = p.big ? 1.6 : 0.9;
-      ctx.globalAlpha = 1 - p.t / life;
-      ctx.font = `bold ${p.big ? 48 : 30}px "Trebuchet MS", sans-serif`;
-      ctx.textAlign = "center"; ctx.lineWidth = 6; ctx.strokeStyle = "#fff";
-      ctx.fillStyle = p.bad ? "#7a5cff" : p.big ? "#ff7a1a" : "#2bb673";
-      const yy = p.y - p.t * 60;
-      ctx.strokeText(p.text, p.x, yy); ctx.fillText(p.text, p.x, yy);
+      const life = p.life || 0.9, k = p.t / life;
+      ctx.globalAlpha = Math.min(1, (1 - k) * 2);
+      const scale = p.big ? Math.min(1, p.t * 5) * (1 + Math.sin(p.t * 10) * 0.04) : 1;
+      ctx.save(); ctx.translate(p.x, p.y - (p.big ? 0 : p.t * 70)); ctx.scale(scale, scale);
+      ctx.font = `bold ${p.big ? Math.min(52, W * 0.11) : 30}px "Trebuchet MS", sans-serif`;
+      ctx.lineWidth = p.big ? 9 : 6; ctx.strokeStyle = "#fff"; ctx.lineJoin = "round";
+      ctx.fillStyle = p.color || (p.big ? "#ff7a1a" : "#2bb673");
+      ctx.strokeText(p.text, 0, 0); ctx.fillText(p.text, 0, 0);
+      ctx.restore();
     });
     ctx.globalAlpha = 1;
   }
@@ -402,27 +529,31 @@
   function drawHud() {
     if (state === "menu") return;
     const top = 14;
-    ctx.textBaseline = "top"; ctx.lineWidth = 6; ctx.strokeStyle = "#fff";
-    ctx.font = 'bold 34px "Trebuchet MS", sans-serif'; ctx.textAlign = "left";
-    ctx.fillStyle = "#1d2a4a";
+    ctx.textBaseline = "top"; ctx.lineWidth = 6; ctx.strokeStyle = "#fff"; ctx.lineJoin = "round";
+    ctx.font = 'bold 34px "Trebuchet MS", sans-serif'; ctx.textAlign = "left"; ctx.fillStyle = "#1d2a4a";
     ctx.strokeText("⭐ " + score, 16, top); ctx.fillText("⭐ " + score, 16, top);
     ctx.textAlign = "right"; ctx.font = '30px sans-serif';
     ctx.fillText("❤️".repeat(Math.max(lives, 0)) + "🤍".repeat(3 - Math.max(lives, 0)), W - 16, top + 2);
     ctx.textAlign = "center"; ctx.font = 'bold 18px "Trebuchet MS", sans-serif';
-    ctx.strokeText("Super " + heroName() + " · Level " + level, W / 2, top + 48);
-    ctx.fillText("Super " + heroName() + " · Level " + level, W / 2, top + 48);
+    const label = (isArabic() ? "سوبر " : "Super ") + heroName() + " · " + (isArabic() ? "مستوى " : "Level ") + level;
+    ctx.strokeText(label, W / 2, top + 50); ctx.fillText(label, W / 2, top + 50);
+    if (powerT > 0) {
+      const bw = Math.min(220, W * 0.5);
+      ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.fillRect(W / 2 - bw / 2, top + 78, bw, 10);
+      ctx.fillStyle = "#ffb703"; ctx.fillRect(W / 2 - bw / 2, top + 78, bw * (powerT / 5), 10);
+    }
   }
 
   function frame(t) {
-    const now = t / 1000;
-    const dt = Math.min(0.05, lastT ? now - lastT : 0);
+    const now = t / 1000, dt = Math.min(0.05, lastT ? now - lastT : 0);
     lastT = now;
     update(dt);
-    drawBackground();
-    drawItems();
+    ctx.save();
+    if (shake > 0) ctx.translate(rand(-8, 8) * shake * 3, rand(-8, 8) * shake * 3);
+    drawBackground(); drawItems();
     if (state !== "menu") drawHero();
-    drawFx();
-    drawHud();
+    drawFx(); drawHud();
+    ctx.restore();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
